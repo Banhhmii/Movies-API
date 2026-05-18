@@ -1,16 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
+  </head>
+  <body>
+    <nav>
+      <a href="">Home</a>
+      <a href="/movies">Movies</a>
+      <a href="/movies/:id">Get Movie</a>
+      <a href="/movies">Add Movie</a>
+      <a href="updateMovie.html">Update Movie</a>
+      <a href="/movies/:id">Delete Movie</a>
+    </nav>
     <form id="movieForm">
-        <input type="text" id="title" placeholder="Enter movie title">
-        <input type="number" id="year" placeholder="Enter release year">
-        <button type="submit">Add Movie</button>
+      <input type="text" id="title" placeholder="Enter movie title" />
+      <input type="number" id="year" placeholder="Enter release year" />
+      <button type="submit">Add Movie</button>
     </form>
-    <script src="script.js"></script>
-</body>
+    <script src="script.js" defer></script>
+  </body>
 </html>

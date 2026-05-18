@@ -16,4 +16,41 @@ const addMovie = async () => {
     }
 }
 
-document.getElementById("movieForm").addEventListener("submit", addMovie);
+const updateMovie = async (event) => {
+    event.preventDefault();
+
+    const movieId = Number(document.getElementById("movieId").value);
+    const movieTitle = document.getElementById("updateTitle").value;
+    const movieYear = Number(document.getElementById("updateYear").value);
+
+    if(movieTitle && movieYear && movieId) {
+        try{
+            const updateResponse = await fetch(`/movies/${movieId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id: movieId, title: movieTitle, year: movieYear})
+            });
+            if (!updateResponse.ok) {
+                throw new Error(`HTTP error! status: ${updateResponse.status}`);
+            }
+            const updateData = await updateResponse.json();
+            console.log("Movie updated successfully:");
+        } catch (error) {
+            console.error('Error updating movie:', error);
+        }
+    }
+
+};
+
+const movieForm = document.getElementById("movieForm");
+const updateForm = document.getElementById("updateForm");
+
+if (movieForm) {
+    movieForm.addEventListener('submit', addMovie);
+}
+
+if (updateForm) {
+    updateForm.addEventListener('submit', updateMovie);
+}
