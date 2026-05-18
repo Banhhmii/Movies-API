@@ -52,6 +52,15 @@ app.post('/movies', (req, res) => {
     res.json({ message: "Movie added successfully!", movie });
 });
 
+app.get('/movies/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const movie = movies.find((movie) => movie.id === id);
+    if (!movie) {
+        return res.status(404).json({ error: "Movie not found" });
+    }
+    res.json(movie);
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })
