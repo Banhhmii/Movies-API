@@ -44,8 +44,29 @@ const updateMovie = async (event) => {
 
 };
 
+const deleteMovie = async (event) => {
+    event.preventDefault();
+    console.log("Delete movie function called");
+    const movieId = Number(document.getElementById("deleteMovieId").value);
+    if(movieId) {
+        try {
+            const deleteResponse = await fetch(`/movies/${movieId}`, {
+                method: 'DELETE'
+            });
+            if (!deleteResponse.ok) {
+                throw new Error(`HTTP error! status: ${deleteResponse.status}`);
+            }
+            const deleteData = await deleteResponse.json();
+            console.log("Movie deleted successfully:");
+        } catch (error) {
+            console.error('Error deleting movie:', error);
+        }
+    }
+};
+
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
+const deleteForm = document.getElementById("deleteForm");
 
 if (movieForm) {
     movieForm.addEventListener('submit', addMovie);
@@ -53,4 +74,8 @@ if (movieForm) {
 
 if (updateForm) {
     updateForm.addEventListener('submit', updateMovie);
+}
+
+if (deleteForm) {
+    deleteForm.addEventListener('submit', deleteMovie);
 }

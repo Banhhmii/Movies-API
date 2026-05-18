@@ -52,6 +52,21 @@ app.get('/updateMovie.html', (req, res) => {
     });
 });
 
+app.get('/deleteMovie.html', (req, res) => {
+    const options = {
+        root: __dirname,
+        headers: {
+            'Content-Type': 'text/html'
+        }
+    };
+    res.sendFile('deleteMovie.html', options, (err) => {
+        if (err) {
+            console.error("Error sending deleteMovie.html:", err);
+            res.status(500).send("Internal Server Error");
+        }
+    });
+});
+
 app.get ('/movies', (req, res) => {
     res.json(movies);
 });
@@ -90,6 +105,16 @@ app.put('/movies/:id', (req, res) => {
     const updatedMovie = { id, title, year };
     movies[movieIndex] = updatedMovie;
     res.json({ message: "Movie updated successfully!", movie: updatedMovie });
+});
+
+app.delete('/movies/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const movieIndex = movies.findIndex((movie) => movie.id === id);
+    if (movieIndex === -1) {
+        return res.status(404).json({ error: "Movie not found" });
+    }
+    movies.splice(movieIndex, 1);
+    res.json({ message: "Movie deleted successfully!" });
 });
 
 app.listen(port, () => {
