@@ -7,6 +7,30 @@ const movies = [];
 
 app.use(express.json());
 
+//Logging middleware to log incoming requests
+app.use((req, res, next) => {
+    console.log(`Request received: ${req.method},  ${req.url}`)
+    next();
+});
+
+//Error handling middleware to catch and log errors
+app.use((err, req, res, next) => {
+    console.error("An error occurred:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+});
+
+//Input validation middleware to ensure required fields are present and of correct type
+const inputValidationMiddleware = (req, res, next) => {
+    const { title, year } = req.body;
+    if (!title || !year) {
+        return res.status(400).json({ error: "Title and year are required" });
+    }
+    if (typeof title !== 'string' || typeof year !== 'number') {
+        return res.status(400).json({ error: "Invalid data types for title or year" });
+    }
+    next(); 
+}
+
 app.get('/', (req, res) => {
     const options = {
         root: __dirname,
@@ -71,13 +95,11 @@ app.get ('/movies', (req, res) => {
     res.json(movies);
 });
 
-app.post('/movies', (req, res) => {
+app.post('/movies', inputValidationMiddleware,(req, res) => {
     const movie = req.body;
     const id = Math.floor(Math.random() * 1000);
     const {title, year} = movie;
-    if (!title || !year) {
-        return res.status(400).json({ error: "Title and year are required" });
-    }
+
     movies.push({id, ...movie});
     res.json({ message: "Movie added successfully!", movie });
 });
@@ -91,13 +113,11 @@ app.get('/movies/:id', (req, res) => {
     res.json(movie);
 });
 
-app.put('/movies/:id', (req, res) => {
+app.put('/movies/:id', inputValidationMiddleware, (req, res) => {
     const id = parseInt(req.params.id);
     const movie = req.body;
     const {title, year} = movie;
-    if (!title || !year) {
-        return res.status(400).json({ error: "Title and year are required" });
-    }
+
     const movieIndex = movies.findIndex((movie) => movie.id === id);
     if (movieIndex === -1) {
         return res.status(404).json({ error: "Movie not found" });
