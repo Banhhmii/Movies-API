@@ -1,15 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-    <form  id="deleteForm">
-        <input type="number" id="deleteMovieId" placeholder="Enter movie ID to delete" />
-        <button type="submit">Delete Movie</button>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav>
+      <a href="/movies">Movies</a>
+      <a href="getMovie.html">Get Movie</a>
+      <a href="/">Add Movie</a>
+      <a href="updateMovie.html">Update Movie</a>
+      <a href="deleteMovie.html">Delete Movie</a>
+    </nav>
+    <form id="deleteForm">
+      <input
+        type="number"
+        id="deleteMovieId"
+        placeholder="Enter movie ID to delete"
+      />
+      <button type="submit">Delete Movie</button>
     </form>
-</body>
-<script src="script.js"></script>
+  </body>
+  <script src="script.js"></script>
 </html>

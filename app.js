@@ -61,6 +61,36 @@ app.get('/script.js', (req, res) => {
     });
 });
 
+app.get('/styles.css', (req, res) => {
+    const options = {
+        root: __dirname,
+        headers: {
+            'Content-Type': 'text/css'
+        }
+    };
+    res.sendFile('styles.css', options, (err) => {
+        if (err) {
+            console.error("Error sending style.css:", err);
+            res.status(500).send("Internal Server Error");
+        }
+    });
+});
+
+app.get('/getMovie.html', (req, res) => {
+    const options = {
+        root: __dirname,
+        headers: {
+            'Content-Type': 'text/html'
+        }
+    };
+    res.sendFile('getMovie.html', options, (err) => {
+        if (err) {
+            console.error("Error sending getMovie.html:", err);
+            res.status(500).send("Internal Server Error");
+        }
+    });
+});
+
 app.get('/updateMovie.html', (req, res) => {
     const options = {
         root: __dirname,

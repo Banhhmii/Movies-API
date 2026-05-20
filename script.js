@@ -16,6 +16,23 @@ const addMovie = async () => {
     }
 }
 
+const getMovie = async (event) => {
+    event.preventDefault();
+    const movieId = document.getElementById("movieId").value;
+    const movieDetails = document.getElementById("movieDetails");
+    try{
+        const response = await fetch(`/movies/${movieId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        let resultString = `<p>Title: ${data.title}</p><p>Year: ${data.year}</p>`;
+        movieDetails.innerHTML = resultString;
+    } catch (error) {
+        console.error('Error fetching movie:', error);
+    }
+}
+
 const updateMovie = async (event) => {
     event.preventDefault();
 
@@ -67,6 +84,11 @@ const deleteMovie = async (event) => {
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
 const deleteForm = document.getElementById("deleteForm");
+const getForm = document.getElementById("getForm");
+
+if (getForm) {
+    getForm.addEventListener('submit', getMovie);
+}
 
 if (movieForm) {
     movieForm.addEventListener('submit', addMovie);
