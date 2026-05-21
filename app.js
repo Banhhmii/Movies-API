@@ -76,6 +76,20 @@ app.get('/styles.css', (req, res) => {
     });
 });
 
+app.get('/allMovies.html', (req, res) => {
+    const options = {
+        root: __dirname,
+        headers: {
+            'Content-Type': 'text/html'
+        }};
+    res.sendFile('allMovies.html', options, (err) => {
+        if (err) {
+            console.error("Error sending allMovies.html:", err);
+            res.status(500).send("Internal Server Error");
+        }
+    });
+});
+
 app.get('/getMovie.html', (req, res) => {
     const options = {
         root: __dirname,
