@@ -143,6 +143,21 @@ app.get("/deleteMovie.html", (req, res) => {
   });
 });
 
+app.get("/addDirector.html", (req, res) => {
+  const options = {
+    root: __dirname,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  };
+  res.sendFile("addDirector.html", options, (err) => {
+    if (err) {
+      console.error("Error sending addDirector.html:", err);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+});
+
 app.get("/movies", (req, res) => {
   pool.query('SELECT * FROM "Movies"', (error, results) => {
     if (error) {
@@ -156,11 +171,21 @@ app.get("/movies", (req, res) => {
 
 app.post("/movies", inputValidationMiddleware, (req, res) => {
   const movie = req.body;
-  const id = Math.floor(Math.random() * 1000);
   const { title, year } = movie;
-
-  movies.push({ id, ...movie });
-  res.json({ message: "Movie added successfully!", movie });
+  pool.query(
+    'INSERT INTO "Movies" ("Title", "Year") VALUES ($1, $2) RETURNING *',
+    [title, year],
+    (error, results) => {
+      if (error) {
+        console.error("Error inserting movie into database:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(201).json({
+        message: "Movie added successfully!",
+        movie: results.rows[0],
+      });
+    }
+  )
 });
 
 app.get("/movies/:id", (req, res) => {
@@ -194,6 +219,26 @@ app.delete("/movies/:id", (req, res) => {
   }
   movies.splice(movieIndex, 1);
   res.json({ message: "Movie deleted successfully!" });
+});
+
+app.post("/directors", (req, res) => {
+  const director = req.body;
+  const { name, birthYear } = director;
+  pool.query(
+    'INSERT INTO "Directors" ("Name", "Birth_year") VALUES ($1, $2) RETURNING *',
+    [name, birthYear],
+    (error, results) => {
+      if (error) {
+        console.error("Error inserting director into database:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      res.status(201).json({
+        message: "Director added successfully!",
+        director: results.rows[0],
+      });
+    }
+  );
+
 });
 
 app.listen(port, () => {

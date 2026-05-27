@@ -28,7 +28,7 @@ const addMovie = async (event) => {
     } catch (error) {
         console.error('Error adding movie:', error);
     }
-}
+};
 
 const getMovie = async (event) => {
     event.preventDefault();
@@ -45,7 +45,7 @@ const getMovie = async (event) => {
     } catch (error) {
         console.error('Error fetching movie:', error);
     }
-}
+};
 
 const updateMovie = async (event) => {
     event.preventDefault();
@@ -95,11 +95,29 @@ const deleteMovie = async (event) => {
     }
 };
 
+const addDirector = async (event) => {
+    event.preventDefault();
+    const directorName = document.getElementById("name").value;
+    const directorBirthYear = Number(document.getElementById("birthYear").value);
+    try {
+        const response = await fetch('/directors', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({name: directorName, birthYear: directorBirthYear})
+        });
+    } catch (error) {
+        console.error('Error adding director:', error);
+    }
+};
+
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
 const deleteForm = document.getElementById("deleteForm");
 const getForm = document.getElementById("getForm");
 const moviesList = document.getElementById("moviesList");
+const directorForm = document.getElementById("directorForm");
 
 if(moviesList) {
     displayMovies();
@@ -119,4 +137,8 @@ if (updateForm) {
 
 if (deleteForm) {
     deleteForm.addEventListener('submit', deleteMovie);
+}
+
+if (directorForm) {
+    directorForm.addEventListener('submit', addDirector);
 }
