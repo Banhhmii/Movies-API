@@ -210,12 +210,6 @@ app.get("/movies/:title", (req, res) => {
       res.json(results.rows[0]);
     },
   );
-  // const id = parseInt(req.params.id);
-  // const movie = movies.find((movie) => movie.id === id);
-  // if (!movie) {
-  //   return res.status(404).json({ error: "Movie not found" });
-  // }
-  // res.json(movie);
 });
 
 app.put("/movies/:id", inputValidationMiddleware, (req, res) => {
