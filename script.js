@@ -34,15 +34,15 @@ const addMovie = async (event) => {
 
 const getMovie = async (event) => {
     event.preventDefault();
-    const movieId = document.getElementById("movieId").value;
+    const movieTitle = document.getElementById("movieTitle").value;
     const movieDetails = document.getElementById("movieDetails");
     try{
-        const response = await fetch(`/movies/${movieId}`);
+        const response = await fetch(`/movies/${movieTitle}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        let resultString = `<p>Title: ${data.title}</p><p>Year: ${data.year}</p>`;
+        let resultString = `<p>Title: ${data.Title}</p><p>Year: ${data.Year}</p><p>Director ID: ${data.Director_id}</p><p>Length: ${data["Length(mins)"]} mins</p>`;
         movieDetails.innerHTML = resultString;
     } catch (error) {
         console.error('Error fetching movie:', error);

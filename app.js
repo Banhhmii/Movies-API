@@ -28,9 +28,15 @@ app.use((err, req, res, next) => {
 const inputValidationMiddleware = (req, res, next) => {
   const { title, year, director_id } = req.body;
   if (!title || !year || !director_id) {
-    return res.status(400).json({ error: "Title, year, and director_id are required" });
+    return res
+      .status(400)
+      .json({ error: "Title, year, and director_id are required" });
   }
-  if (typeof title !== "string" || typeof year !== "number" || typeof director_id !== "number") {
+  if (
+    typeof title !== "string" ||
+    typeof year !== "number" ||
+    typeof director_id !== "number"
+  ) {
     return res
       .status(400)
       .json({ error: "Invalid data types for title, year, or director_id" });
@@ -184,17 +190,32 @@ app.post("/movies", inputValidationMiddleware, (req, res) => {
         message: "Movie added successfully!",
         movie: results.rows[0],
       });
-    }
-  )
+    },
+  );
 });
 
-app.get("/movies/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const movie = movies.find((movie) => movie.id === id);
-  if (!movie) {
-    return res.status(404).json({ error: "Movie not found" });
-  }
-  res.json(movie);
+app.get("/movies/:title", (req, res) => {
+  const title = req.params.title;
+  pool.query(
+    'SELECT * FROM "Movies" WHERE "Title" = $1',
+    [title],
+    (error, results) => {
+      if (error) {
+        console.error("Error fetching movie from database:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      if (results.rows.length === 0) {
+        return res.status(404).json({ error: "Movie not found" });
+      }
+      res.json(results.rows[0]);
+    },
+  );
+  // const id = parseInt(req.params.id);
+  // const movie = movies.find((movie) => movie.id === id);
+  // if (!movie) {
+  //   return res.status(404).json({ error: "Movie not found" });
+  // }
+  // res.json(movie);
 });
 
 app.put("/movies/:id", inputValidationMiddleware, (req, res) => {
@@ -236,9 +257,8 @@ app.post("/directors", (req, res) => {
         message: "Director added successfully!",
         director: results.rows[0],
       });
-    }
+    },
   );
-
 });
 
 app.listen(port, () => {
