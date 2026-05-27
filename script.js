@@ -16,14 +16,16 @@ const addMovie = async (event) => {
     event.preventDefault();
     const movieTitle = document.getElementById("title").value;
     const movieYear = Number(document.getElementById("year").value);
-    const {title, year} = {title: movieTitle, year: movieYear};
+    const directorId = Number(document.getElementById("director_id").value);
+    const movieLength = Number(document.getElementById("length").value);
+    const {title, year, director_id, length} = {title: movieTitle, year: movieYear, director_id: directorId, length: movieLength};
     try {
         const response = await fetch('/movies', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({title, year})
+            body: JSON.stringify({title, year, director_id, length})
         });
     } catch (error) {
         console.error('Error adding movie:', error);

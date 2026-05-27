@@ -26,14 +26,14 @@ app.use((err, req, res, next) => {
 
 //Input validation middleware to ensure required fields are present and of correct type
 const inputValidationMiddleware = (req, res, next) => {
-  const { title, year } = req.body;
-  if (!title || !year) {
-    return res.status(400).json({ error: "Title and year are required" });
+  const { title, year, director_id } = req.body;
+  if (!title || !year || !director_id) {
+    return res.status(400).json({ error: "Title, year, and director_id are required" });
   }
-  if (typeof title !== "string" || typeof year !== "number") {
+  if (typeof title !== "string" || typeof year !== "number" || typeof director_id !== "number") {
     return res
       .status(400)
-      .json({ error: "Invalid data types for title or year" });
+      .json({ error: "Invalid data types for title, year, or director_id" });
   }
   next();
 };
@@ -171,10 +171,10 @@ app.get("/movies", (req, res) => {
 
 app.post("/movies", inputValidationMiddleware, (req, res) => {
   const movie = req.body;
-  const { title, year } = movie;
+  const { title, year, director_id, length } = movie;
   pool.query(
-    'INSERT INTO "Movies" ("Title", "Year") VALUES ($1, $2) RETURNING *',
-    [title, year],
+    'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)") VALUES ($1, $2, $3, $4) RETURNING *',
+    [title, year, director_id, length],
     (error, results) => {
       if (error) {
         console.error("Error inserting movie into database:", error);
