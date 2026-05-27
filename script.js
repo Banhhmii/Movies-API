@@ -51,19 +51,19 @@ const getMovie = async (event) => {
 
 const updateMovie = async (event) => {
     event.preventDefault();
-
-    const movieId = Number(document.getElementById("movieId").value);
-    const movieTitle = document.getElementById("updateTitle").value;
+    const movieTitle = document.getElementById("movieTitle").value;
     const movieYear = Number(document.getElementById("updateYear").value);
+    const directorId = Number(document.getElementById("updateDirectorId").value);
+    const movieLength = Number(document.getElementById("updateLength").value);
 
-    if(movieTitle && movieYear && movieId) {
+    if(movieTitle && movieYear && directorId && movieLength) {
         try{
-            const updateResponse = await fetch(`/movies/${movieId}`, {
+            const updateResponse = await fetch(`/movies/${movieTitle}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({id: movieId, title: movieTitle, year: movieYear})
+                body: JSON.stringify({title: movieTitle, year: movieYear, director_id: directorId, length: movieLength})
             });
             if (!updateResponse.ok) {
                 throw new Error(`HTTP error! status: ${updateResponse.status}`);

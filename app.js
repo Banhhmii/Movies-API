@@ -212,18 +212,28 @@ app.get("/movies/:title", (req, res) => {
   );
 });
 
-app.put("/movies/:id", inputValidationMiddleware, (req, res) => {
-  const id = parseInt(req.params.id);
+app.put("/movies/:title", inputValidationMiddleware, (req, res) => {
+  const title = req.params.title;
   const movie = req.body;
-  const { title, year } = movie;
+  const { year, director_id, length } = movie;
 
-  const movieIndex = movies.findIndex((movie) => movie.id === id);
-  if (movieIndex === -1) {
-    return res.status(404).json({ error: "Movie not found" });
-  }
-  const updatedMovie = { id, title, year };
-  movies[movieIndex] = updatedMovie;
-  res.json({ message: "Movie updated successfully!", movie: updatedMovie });
+  pool.query(
+    'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 RETURNING *',
+    [year, director_id, length, title],
+    (error, results) => {
+      if (error) {
+        console.error("Error updating movie in database:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      if (results.rows.length === 0) {
+        return res.status(404).json({ error: "Movie not found" });
+      }
+      res.json({
+        message: "Movie updated successfully!",
+        movie: results.rows[0],
+      });
+    },
+  )
 });
 
 app.delete("/movies/:id", (req, res) => {
