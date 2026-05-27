@@ -25,7 +25,7 @@ const addMovie = async (event) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({title, year, director_id, length})
+            body: JSON.stringify({title, year, director_id, length  })
         });
     } catch (error) {
         console.error('Error adding movie:', error);
