@@ -1,12 +1,13 @@
 # Movie Manager API
 
-A RESTful API for managing a movie collection.
+A RESTful API for managing a relational database of movies and their directors.
 
 **Live Demo:** https://movies-api-uc4p.onrender.com
 
 ## Tech Stack
 * **Backend:** Node.js, Express
-* **Storage:** In-memory array 
+* **Database:** PostgreSQL (hosted on Supabase)
+* **Database Client:** `pg` (Node Postgres)
 * **Deployment:** Render
 
 ## Setup Instructions
@@ -14,46 +15,95 @@ To run this project locally on your machine:
 1. Clone the repository: `git clone [your-repo-link]`
 2. Navigate to the project folder: `cd [your-folder-name]`
 3. Install dependencies: `npm install`
-4. Start the server: `node [your-main-file-name].js` 
-5. The server will run on `http://localhost:3000`.
+4. Create a `.env` file in the root directory and add your Supabase connection string:
+   `PG_CONNECTION_STRING=postgresql://postgres:[YOUR-PASSWORD]@...`
+5. Start the server: `node [your-main-file-name].js` 
+6. The server will run on `http://localhost:3000`.
 
 ## API Documentation
 
-### Get All Movies
+### 1. Add a New Director
+* **Method:** `POST`
+* **URL:** `/directors`
+* **Request Body:**
+  ```json
+  {
+    "name": "Christopher Nolan",
+    "birthYear": 1970
+  }
+  ```
+* **Response Format:** Returns a `201 Created` status, a success message, and the newly created director object.
+
+### 2. Get All Movies
 * **Method:** `GET`
 * **URL:** `/movies`
-* **Response Format:**
+* **Response Format:** Returns a JSON array of all movies from the PostgreSQL database.
   ```json
   [
-    { "id": 1, "title": "Inception", "year": 2010 }
+    { 
+      "id": 1, 
+      "Title": "Inception", 
+      "Year": 2010, 
+      "Director_id": 1, 
+      "Length(mins)": 148 
+    }
   ]
-### Get a Specific Movie
-* **Method**: GET  
-* **URL**: /movies/:id  
-* **Response Format**:  
-```
-//example
-{id: 1234, title: Rush Hour, year: 2004}
-```
-* **Error Cases**: Returns 404 Not Found if the movie ID does not exist.  
+  ```
 
-### Add a New Movie
-* **Method**: POST  
-* **URL**: /movies  
-* **Response Format**: Returns a success message.  
-* **Error Cases**: Returns 400 Bad Request if the title or year is missing, or if the data types are invalid.
+### 3. Get a Specific Movie
+* **Method:** `GET`
+* **URL:** `/movies/:title`
+* **Response Format:** Returns the specific movie object.
+  ```json
+  { 
+    "id": 1, 
+    "Title": "Inception", 
+    "Year": 2010, 
+    "Director_id": 1, 
+    "Length(mins)": 148 
+  }
+  ```
+* **Error Cases:** Returns `404 Not Found` if the movie title does not exist.
 
-### Update a Movie
-* **Method**: PUT 
-* **URL**: /movies/:id  
-* **Response Format**: Returns a success message.  
-* **Error Cases**: Returns 400 Bad Request if data is missing/invalid, or 404 Not Found if the ID does not exist. 
-## Delete a Movie
-* **Method**: DELETE  
-* **URL**: /movies/:id  
-* **Response Format**: Returns a success message confirming deletion. 
-* **Error Cases**: Returns 404 Not Found if the ID does not exist.  
+### 4. Add a New Movie
+* **Method:** `POST`
+* **URL:** `/movies`
+* **Request Body:**
+  ```json
+  {
+    "title": "Inception",
+    "year": 2010,
+    "director_id": 1,
+    "length": 148
+  }
+  ```
+* **Response Format:** Returns a `201 Created` status, a success message, and the new movie object.
+* **Error Cases:** Returns `400 Bad Request` if the `title`, `year`, or `director_id` are missing, or if the data types are invalid.
+
+### 5. Update a Movie
+* **Method:** `PUT`
+* **URL:** `/movies/:title`
+* **Request Body:** *(Note: `title` must be included in the JSON body to pass the strict input validation middleware)*
+  ```json
+  {
+    "title": "Inception",
+    "year": 2014,
+    "director_id": 1,
+    "length": 169
+  }
+  ```
+* **Response Format:** Returns a success message and the updated movie object.
+* **Error Cases:** Returns `400 Bad Request` if data is missing/invalid, or `404 Not Found` if the title does not exist.
+
+### 6. Delete a Movie
+* **Method:** `DELETE`
+* **URL:** `/movies/:title`
+* **Response Format:** Returns a success message confirming deletion.
+* **Error Cases:** Returns `404 Not Found` if the title does not exist.
+
 ## What I Learned
-* I learned what middleware is how to use middleware chaining in between requests
-* I learned how the frontend and backend interact with each other.  
-* I learned how to deploy my API using on Render.
+* I learned what middleware is and how to use middleware chaining in between requests.
+* I learned how the frontend and backend interact with each other.
+* I learned how to deploy my API using Render.
+* I learned how to integrate a real PostgreSQL database, enforce relational schemas with Primary and Foreign Keys, and execute raw SQL queries using the `pg` client.
+* I learned how to resolve modern network connectivity issues (IPv6) by utilizing a Supabase connection pooler.
