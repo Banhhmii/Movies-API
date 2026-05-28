@@ -80,10 +80,10 @@ const updateMovie = async (event) => {
 const deleteMovie = async (event) => {
     event.preventDefault();
     console.log("Delete movie function called");
-    const movieId = Number(document.getElementById("deleteMovieId").value);
-    if(movieId) {
+    const movieTitle = document.getElementById("deleteMovieTitle").value;
+    if(movieTitle) {
         try {
-            const deleteResponse = await fetch(`/movies/${movieId}`, {
+            const deleteResponse = await fetch(`/movies/${movieTitle}`, {
                 method: 'DELETE'
             });
             if (!deleteResponse.ok) {

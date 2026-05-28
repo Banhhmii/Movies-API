@@ -233,17 +233,35 @@ app.put("/movies/:title", inputValidationMiddleware, (req, res) => {
         movie: results.rows[0],
       });
     },
-  )
+  );
 });
 
-app.delete("/movies/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const movieIndex = movies.findIndex((movie) => movie.id === id);
-  if (movieIndex === -1) {
-    return res.status(404).json({ error: "Movie not found" });
-  }
-  movies.splice(movieIndex, 1);
-  res.json({ message: "Movie deleted successfully!" });
+app.delete("/movies/:title", (req, res) => {
+  const title = req.params.title;
+  pool.query(
+    'DELETE FROM "Movies" WHERE "Title" = $1 RETURNING *',
+    [title],
+    (error, results) => {
+      if (error) {
+        console.error("Error deleting movie from database:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      if (results.rows.length === 0) {
+        return res.status(404).json({ error: "Movie not found" });
+      }
+      res.json({
+        message: "Movie deleted successfully!",
+        movie: results.rows[0],
+      });
+    },
+  );
+  // const id = parseInt(req.params.id);
+  // const movieIndex = movies.findIndex((movie) => movie.id === id);
+  // if (movieIndex === -1) {
+  //   return res.status(404).json({ error: "Movie not found" });
+  // }
+  // movies.splice(movieIndex, 1);
+  // res.json({ message: "Movie deleted successfully!" });
 });
 
 app.post("/directors", (req, res) => {
