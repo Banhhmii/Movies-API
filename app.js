@@ -255,13 +255,6 @@ app.delete("/movies/:title", (req, res) => {
       });
     },
   );
-  // const id = parseInt(req.params.id);
-  // const movieIndex = movies.findIndex((movie) => movie.id === id);
-  // if (movieIndex === -1) {
-  //   return res.status(404).json({ error: "Movie not found" });
-  // }
-  // movies.splice(movieIndex, 1);
-  // res.json({ message: "Movie deleted successfully!" });
 });
 
 app.post("/directors", (req, res) => {
