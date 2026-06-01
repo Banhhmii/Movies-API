@@ -114,12 +114,31 @@ const addDirector = async (event) => {
     }
 };
 
+const registerUser = async (event) => {
+    event.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    try{
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: username, password: password})
+        });
+    } catch (error) {
+        console.error('Error registering user:', error);
+    }
+}
+
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
 const deleteForm = document.getElementById("deleteForm");
 const getForm = document.getElementById("getForm");
 const moviesList = document.getElementById("moviesList");
 const directorForm = document.getElementById("directorForm");
+const registerForm = document.getElementById("registerForm");
 
 if(moviesList) {
     displayMovies();
@@ -143,4 +162,8 @@ if (deleteForm) {
 
 if (directorForm) {
     directorForm.addEventListener('submit', addDirector);
+}
+
+if (document.getElementById("registerForm")) {
+    registerForm.addEventListener('submit', registerUser);
 }

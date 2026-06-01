@@ -1,13 +1,16 @@
+const {hashPassword, verifyPassword} = require("./passwordHashing");
 const dotenv = require("dotenv");
 dotenv.config();
+const { Pool } = require("pg");
+const knex = require("knex");
+const express = require("express");
 
-const { Pool, Client } = require("pg");
-const knex = require("knex")({
+
+const nex = knex({
   client: "pg",
   connection: process.env.PG_CONNECTION_STRING,
 });
 
-const express = require("express");
 
 const app = express();
 const port = 3000;
@@ -46,6 +49,26 @@ const inputValidationMiddleware = (req, res, next) => {
       .status(400)
       .json({ error: "Invalid data types for title, year, or director_id" });
   }
+  next();
+};
+
+const userCredentialsValidationMiddleware = (req, res, next) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res
+    .status(400)
+    .json({ error: "Username and password are required" });
+  }
+  if (typeof username !== "string" || typeof password !== "string") {
+    return res
+    .status(400)
+    .json({ error: "Invalid data types for username or password" });
+  }
+  if(password.length > 64){
+    return res
+      .status(400)
+      .json({ error: "Password cannot be longer than 64 characters" });
+    }
   next();
 };
 
@@ -279,6 +302,28 @@ app.post("/directors", (req, res) => {
       });
     },
   );
+});
+
+app.post("/register", userCredentialsValidationMiddleware, (req, res) => {
+  const { username, password } = req.body;
+  hashPassword(password)
+    .then((hashedPassword) => {
+      // Store the username and hashed password in the database
+      pool.query('INSERT INTO  "Users" ("username", "password") VALUES ($1, $2) RETURNING id, username', [username, hashedPassword], (error, results) => {
+        if (error) {
+          console.error("Error registering user in database:", error);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+        res.status(201).json({
+          message: "User registered successfully!",
+          user: results.rows[0],
+        });
+      });
+    })
+    .catch((error) => {
+      console.error("Error hashing password:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    });
 });
 
 app.listen(port, () => {

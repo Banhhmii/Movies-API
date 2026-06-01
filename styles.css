@@ -18,7 +18,7 @@ a {
     color: black;
 }
 
-#movieForm, #updateForm, #deleteForm, #getForm {
+#movieForm, #updateForm, #deleteForm, #getForm, #registerForm {
     display: flex;
     flex-direction: column;
     gap: 10px;
