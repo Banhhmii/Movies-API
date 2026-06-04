@@ -127,10 +127,35 @@ const registerUser = async (event) => {
             },
             body: JSON.stringify({username: username, password: password})
         });
+        if(response.ok) {
+            window.location.href = '/login.html';
+        }
     } catch (error) {
         console.error('Error registering user:', error);
     }
 }
+
+const loginUser = async (event) => {
+    event.preventDefault();
+    const loginUsername = document.getElementById("username").value;
+    const loginPassword = document.getElementById("password").value;
+
+    try{
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: loginUsername, password: loginPassword})
+        });
+        console.log("Login response:", response);
+        if(response.ok) {
+            window.location.href = '/addMovie.html';
+        }
+    } catch (error) {
+        console.error('Error logging in user:', error);
+    }
+};
 
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
@@ -139,6 +164,7 @@ const getForm = document.getElementById("getForm");
 const moviesList = document.getElementById("moviesList");
 const directorForm = document.getElementById("directorForm");
 const registerForm = document.getElementById("registerForm");
+const loginForm = document.getElementById("loginForm");
 
 if(moviesList) {
     displayMovies();
@@ -166,4 +192,9 @@ if (directorForm) {
 
 if (document.getElementById("registerForm")) {
     registerForm.addEventListener('submit', registerUser);
+}
+
+if (loginForm) {
+    console.log("Login form found, adding event listener");
+    loginForm.addEventListener('submit', loginUser);
 }
