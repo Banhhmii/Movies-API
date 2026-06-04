@@ -7,6 +7,7 @@ const knex = require("knex");
 const jwt = require("jsonwebtoken");
 const express = require("express");
 
+
 const knexInstance = knex({
   client: "pg",
   connection: process.env.PG_CONNECTION_STRING,
@@ -74,12 +75,12 @@ const userCredentialsValidationMiddleware = (req, res, next) => {
 
 app.get("/", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
   };
-  res.sendFile("index.html", options, (err) => {
+  res.sendFile("./index.html", options, (err) => {
     if (err) {
       console.error("Error sending index.html:", err);
       res.status(500).send("Internal Server Error");
@@ -89,7 +90,7 @@ app.get("/", (req, res) => {
 
 app.get("/index.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -134,7 +135,7 @@ app.get("/styles.css", (req, res) => {
 
 app.get("/allMovies.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -149,7 +150,7 @@ app.get("/allMovies.html", (req, res) => {
 
 app.get("/addMovie.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -164,7 +165,7 @@ app.get("/addMovie.html", (req, res) => {
 
 app.get("/getMovie.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname  + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -179,7 +180,7 @@ app.get("/getMovie.html", (req, res) => {
 
 app.get("/updateMovie.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -194,7 +195,7 @@ app.get("/updateMovie.html", (req, res) => {
 
 app.get("/deleteMovie.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -209,7 +210,7 @@ app.get("/deleteMovie.html", (req, res) => {
 
 app.get("/addDirector.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -224,7 +225,7 @@ app.get("/addDirector.html", (req, res) => {
 
 app.get("/login.html", (req, res) => {
   const options = {
-    root: __dirname,
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
