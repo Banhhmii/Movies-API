@@ -1,5 +1,6 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
-const { movieValidation, registerAndLoginValidation } = require("./middleware/inputValidation");
+const { movieValidation, registerAndLoginValidation  } = require("./middleware/inputValidation");
+const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
 const { generateToken } = require("./authentication");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -23,16 +24,11 @@ const pool = new Pool({
 app.use(express.json());
 
 //Logging middleware to log incoming requests
-app.use((req, res, next) => {
-  console.log(`Request received: ${req.method},  ${req.url}`);
-  next();
-});
+app.use(loggingMiddleware);
 
 //Error handling middleware to catch and log errors
-app.use((err, req, res, next) => {
-  console.error("An error occurred:", err);
-  res.status(500).json({ error: "Internal Server Error" });
-});
+app.use(errorHandlingMiddleware);
+
 
 
 app.get("/", (req, res) => {
