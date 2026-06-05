@@ -1,4 +1,5 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
+const { movieValidation, registerAndLoginValidation } = require("./middleware/inputValidation");
 const { generateToken } = require("./authentication");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -33,45 +34,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-//Input validation middleware to ensure required fields are present and of correct type
-const inputValidationMiddleware = (req, res, next) => {
-  const { title, year, director_id } = req.body;
-  if (!title || !year || !director_id) {
-    return res
-      .status(400)
-      .json({ error: "Title, year, and director_id are required" });
-  }
-  if (
-    typeof title !== "string" ||
-    typeof year !== "number" ||
-    typeof director_id !== "number"
-  ) {
-    return res
-      .status(400)
-      .json({ error: "Invalid data types for title, year, or director_id" });
-  }
-  next();
-};
-
-const userCredentialsValidationMiddleware = (req, res, next) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ error: "Username and password are required" });
-  }
-  if (typeof username !== "string" || typeof password !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Invalid data types for username or password" });
-  }
-  if (password.length > 64) {
-    return res
-      .status(400)
-      .json({ error: "Password cannot be longer than 64 characters" });
-  }
-  next();
-};
 
 app.get("/", (req, res) => {
   const options = {
@@ -250,7 +212,7 @@ app.get("/movies", (req, res) => {
   //res.json(movies);
 });
 
-app.post("/movies", inputValidationMiddleware, (req, res) => {
+app.post("/movies", movieValidation, (req, res) => {
   const movie = req.body;
   const { title, year, director_id, length } = movie;
   pool.query(
@@ -287,7 +249,7 @@ app.get("/movies/:title", (req, res) => {
   );
 });
 
-app.put("/movies/:title", inputValidationMiddleware, (req, res) => {
+app.put("/movies/:title", movieValidation, (req, res) => {
   const title = req.params.title;
   const movie = req.body;
   const { year, director_id, length } = movie;
@@ -351,7 +313,7 @@ app.post("/directors", (req, res) => {
   );
 });
 
-app.post("/register", userCredentialsValidationMiddleware, (req, res) => {
+app.post("/register", registerAndLoginValidation, (req, res) => {
   const { username, password } = req.body;
   hashPassword(password)
     .then((hashedPassword) => {
@@ -377,7 +339,7 @@ app.post("/register", userCredentialsValidationMiddleware, (req, res) => {
     });
 });
 
-app.post("/login", userCredentialsValidationMiddleware, (req, res) => {
+app.post("/login", registerAndLoginValidation, (req, res) => {
   const { username, password } = req.body;
   pool.query(
     'SELECT * FROM "Users" WHERE "username" = $1',
