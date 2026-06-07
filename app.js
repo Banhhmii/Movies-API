@@ -242,14 +242,14 @@ app.get("/movies/:title", authenticateUser, (req, res) => {
   );
 });
 
-app.put("/movies/:title", movieValidation, (req, res) => {
+app.put("/movies/:title", authenticateUser, movieValidation, (req, res) => {
   const title = req.params.title;
   const movie = req.body;
   const { year, director_id, length } = movie;
 
   pool.query(
-    'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 RETURNING *',
-    [year, director_id, length, title],
+    'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 AND "user_id" = $5 RETURNING *',
+    [year, director_id, length, title, req.user.userId],
     (error, results) => {
       if (error) {
         console.error("Error updating movie in database:", error);
@@ -266,11 +266,11 @@ app.put("/movies/:title", movieValidation, (req, res) => {
   );
 });
 
-app.delete("/movies/:title", (req, res) => {
+app.delete("/movies/:title", authenticateUser, (req, res) => {
   const title = req.params.title;
   pool.query(
-    'DELETE FROM "Movies" WHERE "Title" = $1 RETURNING *',
-    [title],
+    'DELETE FROM "Movies" WHERE "Title" = $1 AND "user_id" = $2 RETURNING *',
+    [title, req.user.userId],
     (error, results) => {
       if (error) {
         console.error("Error deleting movie from database:", error);

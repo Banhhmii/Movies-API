@@ -65,11 +65,11 @@ const updateMovie = async (event) => {
     const directorId = Number(document.getElementById("updateDirectorId").value);
     const movieLength = Number(document.getElementById("updateLength").value);
 
-    if(movieTitle && movieYear && directorId && movieLength) {
         try{
             const updateResponse = await fetch(`/movies/${movieTitle}`, {
                 method: 'PUT',
                 headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({title: movieTitle, year: movieYear, director_id: directorId, length: movieLength})
@@ -82,7 +82,7 @@ const updateMovie = async (event) => {
         } catch (error) {
             console.error('Error updating movie:', error);
         }
-    }
+    
 
 };
 
@@ -93,7 +93,10 @@ const deleteMovie = async (event) => {
     if(movieTitle) {
         try {
             const deleteResponse = await fetch(`/movies/${movieTitle}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
             });
             if (!deleteResponse.ok) {
                 throw new Error(`HTTP error! status: ${deleteResponse.status}`);
