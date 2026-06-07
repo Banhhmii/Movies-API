@@ -224,11 +224,11 @@ app.post("/movies", authenticateUser, movieValidation, (req, res) => {
   );
 });
 
-app.get("/movies/:title", (req, res) => {
+app.get("/movies/:title", authenticateUser, (req, res) => {
   const title = req.params.title;
   pool.query(
-    'SELECT * FROM "Movies" WHERE "Title" = $1',
-    [title],
+    'SELECT * FROM "Movies" WHERE "Title" = $1 AND "user_id" = $2',
+    [title, req.user.userId],
     (error, results) => {
       if (error) {
         console.error("Error fetching movie from database:", error);

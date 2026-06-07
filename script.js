@@ -42,7 +42,11 @@ const getMovie = async (event) => {
     const movieTitle = document.getElementById("movieTitle").value;
     const movieDetails = document.getElementById("movieDetails");
     try{
-        const response = await fetch(`/movies/${movieTitle}`);
+        const response = await fetch(`/movies/${movieTitle}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
