@@ -287,7 +287,7 @@ app.delete("/movies/:title", authenticateUser, (req, res) => {
   );
 });
 
-app.post("/directors", (req, res) => {
+app.post("/directors", authenticateUser, (req, res) => {
   const director = req.body;
   const { name, birthYear } = director;
   pool.query(

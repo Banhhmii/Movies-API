@@ -117,6 +117,7 @@ const addDirector = async (event) => {
         const response = await fetch('/directors', {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({name: directorName, birthYear: directorBirthYear})
