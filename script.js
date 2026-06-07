@@ -1,12 +1,16 @@
 const displayMovies = async () => {
     const moviesList = document.getElementById("moviesList");
     try {
-        const response = await fetch('/movies');
+        const response = await fetch('/movies', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const movies = await response.json();
-        moviesList.innerHTML = movies.map(movie => `<p>ID: ${movie.id},  Title: ${movie.title} (${movie.year})</p>`).join('');
+        moviesList.innerHTML = movies.map(movie => `<p>ID: ${movie.id},  Title: ${movie.Title} (${movie.Year})</p>`).join('');
     } catch (error) {
         console.error('Error fetching movies:', error);
     }

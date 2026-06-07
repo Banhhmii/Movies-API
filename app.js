@@ -197,7 +197,7 @@ app.get("/login.html", (req, res) => {
 });
 
 app.get("/movies", authenticateUser, (req, res) => {
-  pool.query('SELECT * FROM "Movies" WHERE "user_id" = $1', [req.user.id], (error, results) => {
+  pool.query('SELECT * FROM "Movies" WHERE "user_id" = $1', [req.user.userId], (error, results) => {
     if (error) {
       console.error("Error fetching movies from database:", error);
       return res.status(500).json({ error: "Internal Server Error" });
