@@ -1,7 +1,7 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
 const { movieValidation, registerAndLoginValidation  } = require("./middleware/inputValidation");
 const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
-const { generateToken } = require("./authentication");
+const { generateToken, authenticateUser } = require("./middleware/authentication");
 const dotenv = require("dotenv");
 dotenv.config();
 const { Pool } = require("pg");
@@ -28,7 +28,6 @@ app.use(loggingMiddleware);
 
 //Error handling middleware to catch and log errors
 app.use(errorHandlingMiddleware);
-
 
 
 app.get("/", (req, res) => {
@@ -197,23 +196,22 @@ app.get("/login.html", (req, res) => {
   });
 });
 
-app.get("/movies", (req, res) => {
-  pool.query('SELECT * FROM "Movies"', (error, results) => {
+app.get("/movies", authenticateUser, (req, res) => {
+  pool.query('SELECT * FROM "Movies" WHERE "user_id" = $1', [req.user.id], (error, results) => {
     if (error) {
       console.error("Error fetching movies from database:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
     res.json(results.rows);
   });
-  //res.json(movies);
 });
 
-app.post("/movies", movieValidation, (req, res) => {
+app.post("/movies", authenticateUser, movieValidation, (req, res) => {
   const movie = req.body;
   const { title, year, director_id, length } = movie;
   pool.query(
-    'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)") VALUES ($1, $2, $3, $4) RETURNING *',
-    [title, year, director_id, length],
+    'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [title, year, director_id, length, req.user.userId],
     (error, results) => {
       if (error) {
         console.error("Error inserting movie into database:", error);
@@ -221,7 +219,6 @@ app.post("/movies", movieValidation, (req, res) => {
       }
       res.status(201).json({
         message: "Movie added successfully!",
-        movie: results.rows[0],
       });
     },
   );

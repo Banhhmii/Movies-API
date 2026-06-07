@@ -23,6 +23,7 @@ const addMovie = async (event) => {
         const response = await fetch('/movies', {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({title, year, director_id, length  })
@@ -148,8 +149,9 @@ const loginUser = async (event) => {
             },
             body: JSON.stringify({username: loginUsername, password: loginPassword})
         });
-        console.log("Login response:", response);
         if(response.ok) {
+            const data = await response.json();
+            localStorage.setItem('authToken', data.token);
             window.location.href = '/addMovie.html';
         }
     } catch (error) {
