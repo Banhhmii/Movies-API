@@ -3,11 +3,13 @@ const { validateLogin, validateMovie  } = require("./middleware/inputValidation"
 const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
 const { rateLimiter } = require("./middleware/rateLimiter");
 const { generateToken, authenticateUser } = require("./middleware/authentication");
+
 const dotenv = require("dotenv");
 dotenv.config();
 const { Pool } = require("pg");
 const knex = require("knex");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 const express = require("express");
 
 
@@ -16,12 +18,25 @@ const knexInstance = knex({
   connection: process.env.PG_CONNECTION_STRING,
 });
 
+const whitelist = ['http://localhost:3000', 'https://movies-api-uc4p.onrender.com'];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if(!origin || whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+
+
 const app = express();
 const port = 3000;
 const pool = new Pool({
   connectionString: process.env.PG_CONNECTION_STRING,
 });
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
 //Logging middleware to log incoming requests
