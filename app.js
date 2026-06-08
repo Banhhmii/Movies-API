@@ -1,5 +1,5 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
-const { movieValidation, registerAndLoginValidation  } = require("./middleware/inputValidation");
+const { validateLogin, validateMovie  } = require("./middleware/inputValidation");
 const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
 const { generateToken, authenticateUser } = require("./middleware/authentication");
 const dotenv = require("dotenv");
@@ -206,7 +206,7 @@ app.get("/movies", authenticateUser, (req, res) => {
   });
 });
 
-app.post("/movies", authenticateUser, movieValidation, (req, res) => {
+app.post("/movies", authenticateUser, validateMovie, (req, res) => {
   const movie = req.body;
   const { title, year, director_id, length } = movie;
   pool.query(
@@ -242,7 +242,7 @@ app.get("/movies/:title", authenticateUser, (req, res) => {
   );
 });
 
-app.put("/movies/:title", authenticateUser, movieValidation, (req, res) => {
+app.put("/movies/:title", authenticateUser, validateMovie, (req, res) => {
   const title = req.params.title;
   const movie = req.body;
   const { year, director_id, length } = movie;
@@ -306,14 +306,14 @@ app.post("/directors", authenticateUser, (req, res) => {
   );
 });
 
-app.post("/register", registerAndLoginValidation, (req, res) => {
+app.post("/register", validateLogin, (req, res) => {
   const { username, password } = req.body;
-  hashPassword(password)
+  hashPassword(password.trim())
     .then((hashedPassword) => {
       // Store the username and hashed password in the database
       pool.query(
         'INSERT INTO  "Users" ("username", "password") VALUES ($1, $2) RETURNING id, username',
-        [username, hashedPassword],
+        [username.trim(), hashedPassword],
         (error, results) => {
           if (error) {
             console.error("Error registering user in database:", error);
@@ -332,11 +332,11 @@ app.post("/register", registerAndLoginValidation, (req, res) => {
     });
 });
 
-app.post("/login", registerAndLoginValidation, (req, res) => {
+app.post("/login", validateLogin, (req, res) => {
   const { username, password } = req.body;
   pool.query(
     'SELECT * FROM "Users" WHERE "username" = $1',
-    [username],
+    [username.trim()],
     (error, results) => {
       if (error) {
         console.error("Error fetching user from database:", error);
@@ -346,7 +346,7 @@ app.post("/login", registerAndLoginValidation, (req, res) => {
         return res.status(401).json({ error: "Invalid username or password" });
       }
       const user = results.rows[0];
-      verifyPassword(password, user.password)
+      verifyPassword(password.trim(), user.password)
         .then((isMatch) => {
           if (!isMatch) {
             return res
