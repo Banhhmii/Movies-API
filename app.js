@@ -1,6 +1,7 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
 const { validateLogin, validateMovie  } = require("./middleware/inputValidation");
 const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
+const { rateLimiter } = require("./middleware/rateLimiter");
 const { generateToken, authenticateUser } = require("./middleware/authentication");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -206,7 +207,7 @@ app.get("/movies", authenticateUser, (req, res) => {
   });
 });
 
-app.post("/movies", authenticateUser, validateMovie, (req, res) => {
+app.post("/movies", rateLimiter, authenticateUser, validateMovie, (req, res) => {
   const movie = req.body;
   const { title, year, director_id, length } = movie;
   pool.query(
@@ -287,7 +288,7 @@ app.delete("/movies/:title", authenticateUser, (req, res) => {
   );
 });
 
-app.post("/directors", authenticateUser, (req, res) => {
+app.post("/directors", rateLimiter, authenticateUser, (req, res) => {
   const director = req.body;
   const { name, birthYear } = director;
   pool.query(
@@ -306,7 +307,7 @@ app.post("/directors", authenticateUser, (req, res) => {
   );
 });
 
-app.post("/register", validateLogin, (req, res) => {
+app.post("/register", rateLimiter, validateLogin, (req, res) => {
   const { username, password } = req.body;
   hashPassword(password.trim())
     .then((hashedPassword) => {
@@ -332,7 +333,7 @@ app.post("/register", validateLogin, (req, res) => {
     });
 });
 
-app.post("/login", validateLogin, (req, res) => {
+app.post("/login", rateLimiter, validateLogin, (req, res) => {
   const { username, password } = req.body;
   pool.query(
     'SELECT * FROM "Users" WHERE "username" = $1',
