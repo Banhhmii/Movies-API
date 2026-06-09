@@ -5,13 +5,13 @@ const validationErrors = (req, res, next) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    if(!erros.isEmpty()) {
+    if(!errors.isEmpty()) {
         const errorsList = errors.array();
 
         const missingFields = errorsList.filter((error) => error.msg.includes('required'));
+        const statuscode = missingFields.length > 0 ? 400 : 422;
+        return res.status(statuscode).json({ errors: errorsList[0] });
     }
-    const statuscode = missingFields.length > 0 ? 400 : 422;
-    return res.status(statuscode).json({ errors: errorsList[0] });
     next();
 };
 
