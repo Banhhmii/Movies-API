@@ -285,6 +285,19 @@ const loginUser = async (event) => {
   }
 };
 
+const logoutUser = () => {
+  localStorage.removeItem("authToken");
+  showNotification("Logged out successfully.", "info");
+  setTimeout(() => {
+    window.location.href = "/login.html";
+  }, 1000);
+};
+
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logoutUser);
+}
+
 const movieForm = document.getElementById("movieForm");
 const updateForm = document.getElementById("updateForm");
 const deleteForm = document.getElementById("deleteForm");
