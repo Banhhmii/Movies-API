@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 function generateToken(user) {
-    return jwt.sign(user, process.env.SECRET_ACCESS_TOKEN, { expiresIn: '15m' });
+    return jwt.sign(user, process.env.SECRET_ACCESS_TOKEN, { algorithm: 'HS256' }, { expiresIn: '15m' });
 };
 
 // Middleware to authenticate user to access api endpoints
