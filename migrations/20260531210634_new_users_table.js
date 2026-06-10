@@ -3,10 +3,10 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  knex.schema.createTable("Users", (table) => {
+  return knex.schema.createTable("Users", (table) => {
     table.increments("id").primary();
     table.string("username").notNullable().unique();
-    table.string("password").notNullable();
+    table.string("password").notNullable().checkLength("password", 8, 64);
     table.timestamp("created_at", { useTz: true }).notNullable().defaultTo(knex.fn.now());
   }).then(() => {
     console.log("Users table created successfully");

@@ -1,8 +1,17 @@
 const { hashPassword, verifyPassword } = require("./passwordHashing");
-const { validateLogin, validateMovie  } = require("./middleware/inputValidation");
-const { loggingMiddleware, errorHandlingMiddleware } = require("./middleware/appLevel");
+const {
+  validateLogin,
+  validateMovie,
+} = require("./middleware/inputValidation");
+const {
+  loggingMiddleware,
+  errorHandlingMiddleware,
+} = require("./middleware/appLevel");
 const { rateLimiter } = require("./middleware/rateLimiter");
-const { generateToken, authenticateUser } = require("./middleware/authentication");
+const {
+  generateToken,
+  authenticateUser,
+} = require("./middleware/authentication");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -12,23 +21,24 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const express = require("express");
 
-
 const knexInstance = knex({
   client: "pg",
   connection: process.env.PG_CONNECTION_STRING,
 });
 
-const whitelist = ['http://localhost:3000', 'https://movies-api-uc4p.onrender.com'];
+const whitelist = [
+  "http://localhost:3000",
+  "https://movies-api-uc4p.onrender.com",
+];
 const corsOptions = {
-    origin: function (origin, callback) {
-        if(!origin || whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
+  },
 };
-
 
 const app = express();
 const port = 3000;
@@ -44,7 +54,6 @@ app.use(loggingMiddleware);
 
 //Error handling middleware to catch and log errors
 app.use(errorHandlingMiddleware);
-
 
 app.get("/", (req, res) => {
   const options = {
@@ -138,7 +147,7 @@ app.get("/addMovie.html", (req, res) => {
 
 app.get("/getMovie.html", (req, res) => {
   const options = {
-    root: __dirname  + "/views",
+    root: __dirname + "/views",
     headers: {
       "Content-Type": "text/html",
     },
@@ -207,38 +216,97 @@ app.get("/login.html", (req, res) => {
     if (err) {
       console.error("Error sending login.html:", err);
       res.status(500).send("Internal Server Error");
-    } 
-    
+    }
   });
 });
 
 app.get("/movies", authenticateUser, (req, res) => {
-  pool.query('SELECT * FROM "Movies" WHERE "user_id" = $1', [req.user.userId], (error, results) => {
-    if (error) {
-      console.error("Error fetching movies from database:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-    res.json(results.rows);
-  });
-});
-
-app.post("/movies", rateLimiter, authenticateUser, validateMovie, (req, res) => {
-  const movie = req.body;
-  const { title, year, director_id, length } = movie;
   pool.query(
-    'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [title, year, director_id, length, req.user.userId],
+    'SELECT * FROM "Movies" WHERE "user_id" = $1',
+    [req.user.userId],
     (error, results) => {
       if (error) {
-        console.error("Error inserting movie into database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error fetching movies from database:", error);
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to retrieve movies",
+          });
       }
-      res.status(201).json({
-        message: "Movie added successfully!",
-      });
+      res
+        .status(200)
+        .json({ success: true, message: "Movies retrieved successfully" });
     },
   );
 });
+
+app.post(
+  "/movies",
+  rateLimiter,
+  authenticateUser,
+  validateMovie,
+  (req, res) => {
+    const movie = req.body;
+    const { title, year, director_id, length } = movie;
+
+    // Validate director exists
+    pool.query(
+      'SELECT id FROM "Directors" WHERE id = $1',
+      [director_id],
+      (directorError, directorResults) => {
+        if (directorError) {
+          console.error("Error checking director:", directorError);
+          return res
+            .status(500)
+            .json({
+              success: false,
+              error: "Database error",
+              message: "Failed to validate director ID",
+            });
+        }
+
+        if (directorResults.rows.length === 0) {
+          return res.status(400).json({
+            error: "Invalid director ID",
+            message: `Director with ID ${director_id} does not exist`,
+          });
+        }
+
+        //Direcotr exists, proceed to insert movie
+        pool.query(
+          'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING *',
+          [title, year, director_id, length, req.user.userId],
+          (error, results) => {
+            if (error) {
+              console.error("Error inserting movie into database:", error);
+              // Check if error is due to duplicate title
+              if (error.code === "23505") {
+                // Unique constraint violation
+                return res.status(409).json({
+                  error: "Conflict",
+                  message: `A movie with title "${title}" already exists`,
+                });
+              }
+              return res
+                .status(500)
+                .json({
+                  success: false,
+                  error: "Database error",
+                  message: "Failed to add movie",
+                });
+            }
+            res.status(201).json({
+              success: true,
+              message: "Movie added successfully!",
+            });
+          },
+        );
+      },
+    );
+  },
+);
 
 app.get("/movies/:title", authenticateUser, (req, res) => {
   const title = req.params.title;
@@ -248,12 +316,26 @@ app.get("/movies/:title", authenticateUser, (req, res) => {
     (error, results) => {
       if (error) {
         console.error("Error fetching movie from database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to retrieve movie",
+          });
       }
       if (results.rows.length === 0) {
-        return res.status(404).json({ error: "Movie not found" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Movie not found" });
       }
-      res.json(results.rows[0]);
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Movie retrieved successfully",
+          data: results.rows[0],
+        });
     },
   );
 });
@@ -263,21 +345,58 @@ app.put("/movies/:title", authenticateUser, validateMovie, (req, res) => {
   const movie = req.body;
   const { year, director_id, length } = movie;
 
+  // Validate director exists
   pool.query(
-    'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 AND "user_id" = $5 RETURNING *',
-    [year, director_id, length, title, req.user.userId],
-    (error, results) => {
-      if (error) {
-        console.error("Error updating movie in database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    'SELECT id FROM "Directors" WHERE id = $1',
+    [director_id],
+    (directorError, directorResults) => {
+      if (directorError) {
+        console.error("Error checking director:", directorError);
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to validate director ID",
+          });
       }
-      if (results.rows.length === 0) {
-        return res.status(404).json({ error: "Movie not found" });
+
+      if (directorResults.rows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid director ID",
+          message: `Director with ID ${director_id} does not exist`,
+        });
       }
-      res.json({
-        message: "Movie updated successfully!",
-        movie: results.rows[0],
-      });
+
+      pool.query(
+        'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 AND "user_id" = $5 RETURNING *',
+        [year, director_id, length, title, req.user.userId],
+        (error, results) => {
+          if (error) {
+            console.error("Error updating movie in database:", error);
+            return res
+              .status(500)
+              .json({
+                success: false,
+                error: "Database error",
+                message: "Failed to update movie",
+              });
+          }
+          if (results.rows.length === 0) {
+            return res
+              .status(404)
+              .json({ success: false, error: "Movie not found" });
+          }
+          res
+            .status(200)
+            .json({
+              success: true,
+              message: "Movie updated successfully",
+              data: results.rows[0],
+            });
+        },
+      );
     },
   );
 });
@@ -290,15 +409,26 @@ app.delete("/movies/:title", authenticateUser, (req, res) => {
     (error, results) => {
       if (error) {
         console.error("Error deleting movie from database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to delete movie",
+          });
       }
       if (results.rows.length === 0) {
-        return res.status(404).json({ error: "Movie not found" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Movie not found" });
       }
-      res.json({
-        message: "Movie deleted successfully!",
-        movie: results.rows[0],
-      });
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Movie deleted successfully",
+          data: results.rows[0],
+        });
     },
   );
 });
@@ -312,9 +442,16 @@ app.post("/directors", rateLimiter, authenticateUser, (req, res) => {
     (error, results) => {
       if (error) {
         console.error("Error inserting director into database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to add director",
+          });
       }
       res.status(201).json({
+        success: true,
         message: "Director added successfully!",
         director: results.rows[0],
       });
@@ -333,9 +470,16 @@ app.post("/register", rateLimiter, validateLogin, (req, res) => {
         (error, results) => {
           if (error) {
             console.error("Error registering user in database:", error);
-            return res.status(500).json({ error: "Internal Server Error" });
+            return res
+              .status(500)
+              .json({
+                success: false,
+                error: "Database error",
+                message: "Failed to register user",
+              });
           }
           res.status(201).json({
+            success: true,
             message: "User registered successfully!",
             user: results.rows[0],
           });
@@ -344,7 +488,13 @@ app.post("/register", rateLimiter, validateLogin, (req, res) => {
     })
     .catch((error) => {
       console.error("Error hashing password:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: "Database error",
+          message: "Failed to register user",
+        });
     });
 });
 
@@ -356,10 +506,18 @@ app.post("/login", rateLimiter, validateLogin, (req, res) => {
     (error, results) => {
       if (error) {
         console.error("Error fetching user from database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        return res
+          .status(500)
+          .json({
+            success: false,
+            error: "Database error",
+            message: "Failed to login",
+          });
       }
       if (results.rows.length === 0) {
-        return res.status(401).json({ error: "Invalid username or password" });
+        return res
+          .status(401)
+          .json({ success: false, error: "Invalid username or password" });
       }
       const user = results.rows[0];
       verifyPassword(password.trim(), user.password)
@@ -367,18 +525,25 @@ app.post("/login", rateLimiter, validateLogin, (req, res) => {
           if (!isMatch) {
             return res
               .status(401)
-              .json({ error: "Invalid username or password" });
+              .json({ success: false, error: "Invalid username or password" });
           }
           // Generate JWT token
           const token = generateToken({ userId: user.id });
-          res.json({
+          res.status(200).json({
+            success: true,
             message: "Login successful!",
             token: token,
           });
         })
         .catch((error) => {
           console.error("Error verifying password:", error);
-          res.status(500).json({ error: "Internal Server Error" });
+          res
+            .status(500)
+            .json({
+              success: false,
+              error: "Database error",
+              message: "Failed to login",
+            });
         });
     },
   );

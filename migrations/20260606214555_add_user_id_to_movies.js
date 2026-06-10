@@ -2,12 +2,13 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
-  return knex.schema.table("Movies", function(table) {
-    table.integer("user_id").unsigned().references("id").inTable("Users").onDelete("CASCADE");
+exports.up = async function(knex) {
+  // First, add column as nullable
+  await knex.schema.table("Movies", function(table) {
+    table.integer("user_id").unsigned().notNullable().references("id").inTable("Users").onDelete("CASCADE");
   });
-};
 
+};
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
