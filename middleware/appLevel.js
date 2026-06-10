@@ -5,7 +5,7 @@ const loggingMiddleware = (req, res, next) => {
 
 const errorHandlingMiddleware = (err, req, res, next) => {
   console.error("An error occurred:", err);
-  res.status(500).json({ error: "Internal Server Error" });
+  res.status(500).json({ success: false, error: 'Internal Server Error' });
 };
 module.exports = { 
     loggingMiddleware, 

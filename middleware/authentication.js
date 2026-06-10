@@ -11,12 +11,12 @@ function authenticateUser(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
-        return res.status(401).json({ error: 'Access token missing' });
+        return res.status(401).json({ success: false, error: 'Access token missing' });
     }
     // Validate SECRET_ACCESS_TOKEN exists
     if (!process.env.SECRET_ACCESS_TOKEN) {
         console.error("CRITICAL: SECRET_ACCESS_TOKEN not configured");
-        return res.status(500).json({ error: 'Server configuration error' });
+        return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
     
     jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, (err, user) => {
@@ -24,17 +24,20 @@ function authenticateUser(req, res, next) {
             // Differentiate between token expired and invalid token
             if (err.name === 'TokenExpiredError') {
                 return res.status(401).json({ 
+                    success: false,
                     error: 'Token expired',
                     code: 'TOKEN_EXPIRED',
                     expiredAt: err.expiredAt
                 });
             } else if (err.name === 'JsonWebTokenError') {
                 return res.status(403).json({ 
+                    success: false,
                     error: 'Invalid access token',
                     code: 'INVALID_TOKEN'
                 });
             } else {
                 return res.status(403).json({ 
+                    success: false,
                     error: 'Token verification failed',
                     code: 'TOKEN_ERROR'
                 });
