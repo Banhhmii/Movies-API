@@ -274,7 +274,7 @@ app.post(
           });
         }
 
-        //Direcotr exists, proceed to insert movie
+        //Director exists, proceed to insert movie
         pool.query(
           'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING *',
           [title, year, director_id, length, req.user.userId],
