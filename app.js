@@ -225,19 +225,46 @@ app.get("/movies", authenticateUser, (req, res) => {
 app.post("/movies", rateLimiter, authenticateUser, validateMovie, (req, res) => {
   const movie = req.body;
   const { title, year, director_id, length } = movie;
+
+    // Validate director exists
+  pool.query(
+    'SELECT id FROM "Directors" WHERE id = $1',
+    [director_id],
+    (directorError, directorResults) => {
+      if (directorError) {
+        console.error("Error checking director:", directorError);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      
+      if (directorResults.rows.length === 0) {
+        return res.status(400).json({ 
+          error: "Invalid director ID",
+          message: `Director with ID ${director_id} does not exist`
+        });
+      }
+  
+  //Direcotr exists, proceed to insert movie
   pool.query(
     'INSERT INTO "Movies" ("Title", "Year", "Director_id", "Length(mins)", "user_id") VALUES ($1, $2, $3, $4, $5) RETURNING *',
     [title, year, director_id, length, req.user.userId],
     (error, results) => {
       if (error) {
-        console.error("Error inserting movie into database:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
+         console.error("Error inserting movie into database:", error);
+            // Check if error is due to duplicate title
+            if (error.code === '23505') { // Unique constraint violation
+              return res.status(409).json({ 
+                error: "Conflict",
+                message: `A movie with title "${title}" already exists`
+              });
+            }
+            return res.status(500).json({ error: "Internal Server Error" });
+      };
       res.status(201).json({
         message: "Movie added successfully!",
       });
     },
   );
+});
 });
 
 app.get("/movies/:title", authenticateUser, (req, res) => {
@@ -262,6 +289,23 @@ app.put("/movies/:title", authenticateUser, validateMovie, (req, res) => {
   const title = req.params.title;
   const movie = req.body;
   const { year, director_id, length } = movie;
+
+  // Validate director exists
+  pool.query(
+    'SELECT id FROM "Directors" WHERE id = $1',
+    [director_id],
+    (directorError, directorResults) => {
+      if (directorError) {
+        console.error("Error checking director:", directorError);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+      
+      if (directorResults.rows.length === 0) {
+        return res.status(400).json({ 
+          error: "Invalid director ID",
+          message: `Director with ID ${director_id} does not exist`
+        });
+      }
 
   pool.query(
     'UPDATE "Movies" SET "Year" = $1, "Director_id" = $2, "Length(mins)" = $3 WHERE "Title" = $4 AND "user_id" = $5 RETURNING *',
