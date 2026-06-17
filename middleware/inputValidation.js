@@ -7,7 +7,7 @@ const validationErrors = (req, res, next) => {
 
         const missingFields = errorsList.filter((error) => error.msg.includes('required'));
         const statuscode = missingFields.length > 0 ? 400 : 422;
-        return res.status(statuscode).json({ errors: errorsList[0] });
+        return res.status(statuscode).json({ error: errorsList[0].msg.includes('required') ? 'Validation error' : 'Invalid input', message: errorsList[0].msg, success: false });
     }
     next();
 };

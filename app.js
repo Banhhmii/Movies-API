@@ -43,7 +43,6 @@ const corsOptions = {
 };
 
 const app = express();
-const port = 3000;
 const pool = new Pool({
   connectionString: process.env.PG_CONNECTION_STRING,
 });
@@ -283,7 +282,7 @@ app.post(
                 // Unique constraint violation
                 return res.status(409).json({
                   error: "Conflict",
-                  message: `A movie with title "${title}" already exists`,
+                  message: `A movie with the title "${title}" already exists`,
                 });
               }
               return res.status(500).json({
@@ -406,7 +405,6 @@ app.delete("/movies/:title", authenticateUser, (req, res) => {
       res.status(200).json({
         success: true,
         message: "Movie deleted successfully",
-        data: results.rows[0],
       });
     },
   );
@@ -520,6 +518,8 @@ app.post("/login", rateLimiter, validateLogin, (req, res, next) => {
 
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+
+
+module.exports = {
+  app
+}
