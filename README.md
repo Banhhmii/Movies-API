@@ -11,14 +11,57 @@ A RESTful API for managing a relational database of movies and their directors.
 * **Deployment:** Render
 
 ## Setup Instructions
-To run this project locally on your machine:
-1. Clone the repository: `git clone [your-repo-link]`
-2. Navigate to the project folder: `cd [your-folder-name]`
-3. Install dependencies: `npm install`
-4. Create a `.env` file in the root directory and add your Supabase connection string:
-   `PG_CONNECTION_STRING=postgresql://postgres:[YOUR-PASSWORD]@...`
-5. Start the server: `node [your-main-file-name].js` 
-6. The server will run on `http://localhost:3000`.
+
+### Prerequisites
+* Node.js (v18+)
+* A PostgreSQL database (e.g. [Supabase](https://supabase.com) for a free hosted option)
+
+### Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Banhhmii/REST-API.git
+   cd REST-API
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+
+   Create a `.env` file in the root directory with the following variables:
+
+   | Variable | Description |
+   |---|---|
+   | `PG_CONNECTION_STRING` | PostgreSQL connection string (e.g. `postgresql://user:password@host:port/dbname`) |
+   | `SECRET_ACCESS_TOKEN` | Secret key used to sign and verify JWTs — use a long random string |
+
+   Example `.env`:
+   ```
+   PG_CONNECTION_STRING=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:6543/postgres
+   SECRET_ACCESS_TOKEN=your_super_secret_key_here
+   ```
+
+   > **Tip:** If using Supabase, find your connection string under **Project Settings → Database → Connection string** and select the **Transaction pooler** mode (port 6543) for compatibility.
+
+4. **Run database migrations**
+   ```bash
+   npx knex migrate:latest
+   ```
+
+5. **Start the server**
+   ```bash
+   node server.js
+   ```
+
+   The server will run on `http://localhost:3000`.
+
+6. **Run tests** *(optional)*
+   ```bash
+   npm test
+   ```
 
 ## API Documentation
 
