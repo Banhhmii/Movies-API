@@ -20,8 +20,8 @@ A RESTful API for managing a relational database of movies and their directors.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Banhhmii/REST-API.git
-   cd REST-API
+   git clone https://github.com/Banhhmii/Movies-API.git
+   cd Movies-API
    ```
 
 2. **Install dependencies**
